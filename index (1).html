@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POKÉDEX 1025</title>
+<style>
+:root{--bg:#0f1220;--panel:#181c30;--panel2:#212640;--tx:#eef0fa;--mu:#9aa0c0;--ac:#ef4444;--bd:#2b3152;--sh:0 8px 28px rgba(0,0,0,.35)}
+[data-theme=light]{--bg:#f1f3fa;--panel:#fff;--panel2:#e9ecf7;--tx:#1b1f36;--mu:#5d6384;--bd:#d9ddee;--sh:0 8px 24px rgba(40,50,110,.14)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);transition:background .3s,color .3s}
+body.lock{overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:var(--panel2);padding:.55rem .9rem;border-radius:12px;transition:transform .15s,background .2s}
+button:hover{transform:translateY(-1px)}button:active{transform:scale(.96)}
+#load{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;text-align:center;padding:2rem;transition:opacity .5s}
+#load.off{opacity:0;pointer-events:none}
+.ball{width:84px;height:84px;border-radius:50%;background:linear-gradient(#ef4444 0 46%,#222 46% 54%,#fff 54%);border:5px solid #222;position:relative;animation:spin 1.1s linear infinite}
+.ball:after{content:"";position:absolute;inset:50% auto auto 50%;width:26px;height:26px;margin:-13px;background:#fff;border:5px solid #222;border-radius:50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lbar{width:min(320px,80vw);height:8px;background:var(--panel2);border-radius:9px;overflow:hidden}.lbar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:.7rem 1rem}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;max-width:1300px;margin:auto}
+h1{font-size:1.45rem;letter-spacing:.04em;font-weight:900}h1 b{color:var(--ac)}
+.acts{display:flex;gap:.4rem;flex-wrap:wrap}.acts select{background:var(--panel2);border:0;border-radius:12px;padding:.5rem}
+.prog{max-width:1300px;margin:.55rem auto 0;display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--mu)}
+.prog div{flex:1;height:8px;border-radius:9px;background:var(--panel2);overflow:hidden}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#eab308);transition:width .5s}
+.filters{max-width:1300px;margin:.6rem auto 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.filters input[type=search],.filters select{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:.6rem .8rem}
+.filters input[type=search]{flex:1 1 220px;min-width:0}
+.chip{border:1px solid var(--bd);background:var(--panel);font-size:.85rem;padding:.45rem .8rem;border-radius:99px}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.gens{max-width:1300px;margin:.5rem auto 0;display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.2rem}.gens .chip{flex:none}
+main{max-width:1300px;margin:auto;padding:1rem}
+#count{color:var(--mu);font-size:.9rem;margin-bottom:.7rem}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.9rem}
+.card{position:relative;background:var(--panel);border:1px solid var(--bd);border-radius:20px;padding:.8rem;text-align:center;cursor:pointer;box-shadow:var(--sh);overflow:hidden;animation:pop .35s both;transition:transform .2s}
+.card:hover{transform:translateY(-4px) scale(1.02)}
+.card:before{content:"";position:absolute;width:140%;aspect-ratio:1;left:-20%;top:-35%;background:var(--c);opacity:.18;border-radius:50%}
+@keyframes pop{from{opacity:0;transform:translateY(12px)}}
+.card img{position:relative;width:100%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
+.no{position:absolute;left:.7rem;top:.6rem;font-weight:800;font-size:.8rem;color:var(--mu)}
+.card h3{font-size:1rem;margin:.2rem 0 .4rem;position:relative}
+.tys{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap;position:relative}
+.ty{color:#fff;font-size:.72rem;font-weight:700;padding:.18rem .6rem;border-radius:99px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.qa{position:absolute;right:.4rem;top:.4rem;display:flex;flex-direction:column;gap:.25rem;z-index:2}
+.qa button{padding:.2rem .4rem;border-radius:50%;font-size:.85rem;opacity:.55;background:var(--panel2)}.qa button.on{opacity:1}
+.qa .f.on{background:#ec4899}.qa .c.on{background:#22c55e}
+.empty{text-align:center;color:var(--mu);padding:3rem 1rem}
+#sent{height:2px}
+#modal{position:fixed;inset:0;z-index:50;background:rgba(5,8,20,.65);backdrop-filter:blur(6px);display:none;overflow-y:auto;padding:1rem}
+#modal.on{display:block;animation:fade .25s}@keyframes fade{from{opacity:0}}
+.sheet{max-width:860px;margin:0 auto;background:var(--panel);border-radius:26px;overflow:hidden;box-shadow:var(--sh);animation:up .35s}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.hero{background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 40%,#000));padding:1rem 1rem 0;color:#fff;text-align:center}
+.bar{display:flex;gap:.4rem;justify-content:space-between;flex-wrap:wrap}.bar button{background:rgba(255,255,255,.2);color:#fff}
+.hero img{width:min(300px,70vw);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4));animation:float 3.5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.hero h2{font-size:1.9rem}.hero .tys{margin:.5rem 0 1rem}.hero .ty{background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.4)}
+.body{padding:1.2rem;display:grid;gap:1.3rem}
+.body h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.5rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem}
+.facts div{background:var(--panel2);border-radius:14px;padding:.7rem}.facts small{display:block;color:var(--mu);font-size:.75rem}
+.st{display:grid;grid-template-columns:110px 36px 1fr;gap:.5rem;align-items:center;font-size:.88rem;margin:.3rem 0}
+.st span{color:var(--mu)}.st em{height:9px;background:var(--panel2);border-radius:9px;overflow:hidden}.st em i{display:block;height:100%;border-radius:9px;transition:width .8s}
+.gbar{display:flex;height:12px;border-radius:9px;overflow:hidden;background:var(--panel2)}.gbar i{display:block;height:100%}
+.tree,.kid,.kids{display:flex;align-items:center;gap:.6rem}.tree{flex-wrap:wrap}.kids{flex-direction:column;align-items:flex-start}
+.req{font-size:.72rem;color:var(--mu);max-width:110px;text-align:center}
+.evo{display:flex;flex-direction:column;align-items:center;width:104px;padding:.4rem;border-radius:16px;background:var(--panel2);font-size:.8rem}
+.evo img{width:84px;height:84px;object-fit:contain}.evo small{color:var(--mu)}.evo.me{outline:2px solid var(--ac)}
+.sk{height:60vh;display:flex;align-items:center;justify-content:center}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:20px;padding:1rem}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.7rem;margin-bottom:1rem}.big div{background:var(--panel);border:1px solid var(--bd);border-radius:18px;padding:1rem;font-size:.85rem;color:var(--mu)}.big b{display:block;font-size:1.8rem;color:var(--tx)}
+.row{display:grid;grid-template-columns:90px 1fr 40px;gap:.5rem;align-items:center;font-size:.85rem;margin:.35rem 0;cursor:pointer;background:none;width:100%;text-align:left;padding:.1rem}
+.row em{height:12px;border-radius:9px;background:var(--panel2);overflow:hidden}.row em i{display:block;height:100%}
+@media(max-width:560px){#grid{grid-template-columns:repeat(2,1fr);gap:.6rem}h1{font-size:1.2rem}.st{grid-template-columns:90px 32px 1fr}.hero h2{font-size:1.5rem}#modal{padding:.4rem}.kid{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div id="load"><div class="ball"></div><h1>POKÉDEX <b>1025</b></h1><div class="lbar"><i id="lb"></i></div><p id="lt"></p><button id="retry" hidden></button></div>
+<header>
+ <div class="top"><h1>POKÉDEX <b>1025</b></h1>
+  <div class="acts"><button id="bView"></button><button id="bRand"></button>
+   <select id="lang"><option value="en">English</option><option value="nl">Nederlands</option></select><button id="bTheme">◐</button></div></div>
+ <div class="prog"><div><i id="pbar"></i></div><span id="ptxt"></span></div>
+ <div class="filters">
+  <input type="search" id="q"><select id="type"></select><select id="sort"></select>
+  <button class="chip" id="fLeg"></button><button class="chip" id="fMyth"></button><button class="chip" id="fFav"></button><button class="chip" id="fCau"></button><button class="chip" id="fReset"></button></div>
+ <div class="gens" id="gens"></div>
+</header>
+<main><div id="listView"><div id="count"></div><div id="grid"></div><div id="sent"></div></div><div id="statsView" hidden></div></main>
+<div id="modal"></div>
+
+<script>
+const API='https://pokeapi.co/api/v2',GQL='https://beta.pokeapi.co/graphql/v1beta/';
+const ART=id=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+const T=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const NLT=['Normaal','Vuur','Water','Elektrisch','Gras','IJs','Vechten','Gif','Grond','Vliegend','Psychisch','Insect','Gesteente','Spook','Draak','Duister','Staal','Fee'];
+const TC={normal:'#9fa19f',fire:'#e8622b',water:'#3d8fe0',electric:'#e5b80b',grass:'#4fae45',ice:'#4cc3c3',fighting:'#c03a52',poison:'#a050c8',ground:'#b97b3d',flying:'#7f9be0',psychic:'#e85a8a',bug:'#8fb21c',rock:'#b5a96b',ghost:'#6a5a9e',dragon:'#4a62d6',dark:'#5a4a4a',steel:'#6f93a6',fairy:'#e08ae0'};
+const ROM=['I','II','III','IV','V','VI','VII','VIII','IX'];
+const I={en:{search:'Search name or number…',allT:'All types',sNum:'Number 1 → 1025',sRev:'Number 1025 → 1',sAz:'Name A → Z',sZa:'Name Z → A',leg:'Legendary',myth:'Mythical',fav:'Favorites',cau:'Caught',reset:'Reset',rand:'Random',stats:'Statistics',list:'Pokédex',prog:'caught',res:'Pokémon shown',none:'No Pokémon match your filters.',h:'Height',w:'Weight',ab:'Abilities',hid:'hidden',bs:'Base stats',gender:'Gender',gl:'Genderless',m:'Male',f:'Female',gen:'Generation',evo:'Evolution family',noevo:'This Pokémon does not evolve.',back:'Back',prev:'Previous',next:'Next',desc:'Pokédex entry',hp:'HP',attack:'Attack',defense:'Defense','special-attack':'Sp. Atk','special-defense':'Sp. Def',speed:'Speed',lvl:'Level',lvlup:'Level up',trade:'Trade',happy:'High friendship',hold:'holding',day:'Daytime',night:'Night',off:'You seem to be offline. Connect to the internet and try again.',err:'Could not load Pokémon data.',retry:'Try again',loading:'Loading Pokédex…',total:'Total',byT:'Pokémon by type',byG:'Pokémon by generation',fb:'(No Dutch entry available; showing English)',cav:'Mark as caught',cdone:'Caught ✓',fv:'Favorite',fvd:'Favorited ♥',cnt:'Generation'},
+nl:{search:'Zoek naam of nummer…',allT:'Alle types',sNum:'Nummer 1 → 1025',sRev:'Nummer 1025 → 1',sAz:'Naam A → Z',sZa:'Naam Z → A',leg:'Legendarisch',myth:'Mythisch',fav:'Favorieten',cau:'Gevangen',reset:'Wissen',rand:'Willekeurig',stats:'Statistieken',list:'Pokédex',prog:'gevangen',res:'Pokémon getoond',none:'Geen Pokémon gevonden met deze filters.',h:'Lengte',w:'Gewicht',ab:'Vaardigheden',hid:'verborgen',bs:'Basiswaarden',gender:'Geslacht',gl:'Geslachtsloos',m:'Mannelijk',f:'Vrouwelijk',gen:'Generatie',evo:'Evolutiefamilie',noevo:'Deze Pokémon evolueert niet.',back:'Terug',prev:'Vorige',next:'Volgende',desc:'Pokédex-tekst',hp:'HP',attack:'Aanval',defense:'Verdediging','special-attack':'Sp. Aanv.','special-defense':'Sp. Verd.',speed:'Snelheid',lvl:'Level',lvlup:'Level omhoog',trade:'Ruilen',happy:'Hoge vriendschap',hold:'met',day:'Overdag',night:'\'s Nachts',off:'Je lijkt offline te zijn. Maak verbinding met internet en probeer opnieuw.',err:'Pokémon-gegevens konden niet worden geladen.',retry:'Opnieuw proberen',loading:'Pokédex laden…',total:'Totaal',byT:'Pokémon per type',byG:'Pokémon per generatie',fb:'(Geen Nederlandse tekst beschikbaar; Engels getoond)',cav:'Markeer als gevangen',cdone:'Gevangen ✓',fv:'Favoriet',fvd:'Favoriet ♥',cnt:'Generatie'}};
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const S={q:'',type:'',gen:0,leg:false,myth:false,fav:false,cau:false,sort:'num',view:'list',
+ lang:store.get('pdx_lang','en'),theme:store.get('pdx_theme',matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')};
+let ALL=[],BY={},FAV=new Set(store.get('pdx_fav',[])),CAU=new Set(store.get('pdx_caught',[])),D={},CH={},cur=0,navN=0,list=[],shown=0;
+const t=k=>I[S.lang][k]||I.en[k]||k;
+const pad=n=>String(n).padStart(4,'0');
+const pretty=s=>s.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const nm=p=>p.n[S.lang]||p.n.en;
+const tn=x=>S.lang==='nl'?NLT[T.indexOf(x)]:x[0].toUpperCase()+x.slice(1);
+const chip=x=>`<span class="ty" style="background:${TC[x]}">${tn(x)}</span>`;
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const j=async u=>{const r=await fetch(u);if(!r.ok)throw Error(r.status);return r.json()};
+
+/* ---------- data ---------- */
+async function loadIndex(){
+ const c=store.get('pdx_idx_v2',null);if(c&&c.length===1025)return c;
+ try{return await loadGql()}catch(e){console.warn('GraphQL failed, using REST',e);return await loadRest()}
+}
+async function loadGql(){
+ const q=o=>`{pokemon_v2_pokemonspecies(order_by:{id:asc},limit:260,offset:${o},where:{id:{_lte:1025}}){id generation_id is_legendary is_mythical gender_rate pokemon_v2_pokemonspeciesnames(where:{pokemon_v2_language:{name:{_in:["en","nl"]}}}){name pokemon_v2_language{name}} pokemon_v2_pokemons(where:{is_default:{_eq:true}},limit:1){pokemon_v2_pokemontypes(order_by:{slot:asc}){pokemon_v2_type{name}}}}}`;
+ let done=0;
+ const pages=await Promise.all([0,260,520,780].map(async o=>{
+  const r=await fetch(GQL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q(o)})});
+  if(!r.ok)throw Error('gql');const d=await r.json();done++;$('#lb').style.width=(done*25)+'%';
+  return d.data.pokemon_v2_pokemonspecies}));
+ const out=pages.flat().map(s=>{const n={};s.pokemon_v2_pokemonspeciesnames.forEach(x=>n[x.pokemon_v2_language.name]=x.name);
+  return{id:s.id,g:s.generation_id,l:s.is_legendary,m:s.is_mythical,gr:s.gender_rate,n:{en:n.en||'#'+s.id,nl:n.nl||n.en||'#'+s.id},
+   t:(s.pokemon_v2_pokemons[0]?.pokemon_v2_pokemontypes||[]).map(x=>x.pokemon_v2_type.name)}});
+ if(out.length!==1025)throw Error('count');
+ store.set('pdx_idx_v2',out);return out;
+}
+async function detail(id){
+ if(D[id])return D[id];
+ const [p,s]=await Promise.all([j(`${API}/pokemon/${id}`),j(`${API}/pokemon-species/${id}`)]);
+ const u=s.evolution_chain.url;const c=CH[u]||(CH[u]=await j(u));
+ return D[id]={p,s,c};
+}
+
+async function loadRest(){
+ $('#lb').style.width='10%';
+ const [sp,...rest]=await Promise.all([j(`${API}/pokemon-species?limit=1025`),...T.map(x=>j(`${API}/type/${x}`)),...ROM.map((r,i)=>j(`${API}/generation/${i+1}`))]);
+ const ty={},gn={};
+ rest.slice(0,18).forEach((d,i)=>d.pokemon.forEach(x=>{const id=pid(x.pokemon.url);if(id<=1025)(ty[id]=ty[id]||[]).push([x.slot,T[i]])}));
+ rest.slice(18).forEach((d,i)=>d.pokemon_species.forEach(x=>gn[pid(x.url)]=i+1));
+ const out=sp.results.map(r=>{const id=pid(r.url),n=pretty(r.name);return{id,g:gn[id]||1,l:false,m:false,gr:-1,x:0,n:{en:n,nl:n},t:(ty[id]||[]).sort((a,b)=>a[0]-b[0]).map(a=>a[1])}}).sort((a,b)=>a.id-b.id);
+ if(out.length!==1025)throw Error('count '+out.length);
+ return out;
+}
+async function enrich(again){
+ const todo=ALL.filter(p=>p.x===0);let i=0,done=ALL.length-todo.length;
+ const worker=async()=>{while(i<todo.length){const p=todo[i++];
+  try{const s=await j(`${API}/pokemon-species/${p.id}`);const n={};s.names.forEach(x=>n[x.language.name]=x.name);
+   p.n={en:n.en||p.n.en,nl:n.nl||n.en||p.n.en};p.l=s.is_legendary;p.m=s.is_mythical;p.gr=s.gender_rate;p.x=1;done++}catch(e){}
+  if(done%40===0)$('#ptxt').textContent=`${CAU.size}/1025 ${t('prog')} · ⏳ ${done}/1025`}};
+ await Promise.all(Array.from({length:20},worker));
+ if(!again&&ALL.some(p=>p.x===0))return enrich(true);
+ if(ALL.every(p=>p.x===1))store.set('pdx_idx_v2',ALL);
+ progress();renderList();
+}
+/* ---------- boot ---------- */
+async function boot(){
+ $('#retry').hidden=true;$('#lt').textContent=t('loading');$('#lb').style.width='5%';
+ try{
+  ALL=await loadIndex();ALL.forEach(p=>BY[p.id]=p);
+  $('#lb').style.width='100%';applyLang();renderList();route();
+  if(ALL.some(p=>p.x===0))enrich();
+  setTimeout(()=>$('#load').classList.add('off'),250);
+ }catch(e){
+  console.error(e);$('#lt').textContent=(navigator.onLine?t('err')+' ('+(e&&e.message||e)+')':t('off'));
+  $('#retry').textContent=t('retry');$('#retry').hidden=false;$('.ball').style.animation='none';
+ }
+}
+$('#retry').onclick=()=>{$('.ball').style.animation='';boot()};
+
+/* ---------- UI text ---------- */
+function applyLang(){
+ document.documentElement.lang=S.lang;document.documentElement.dataset.theme=S.theme;
+ $('#lang').value=S.lang;$('#q').placeholder=t('search');
+ $('#bView').textContent=S.view==='list'?'📊 '+t('stats'):'📖 '+t('list');
+ $('#bRand').textContent='🎲 '+t('rand');
+ $('#fLeg').textContent='★ '+t('leg');$('#fMyth').textContent='✦ '+t('myth');$('#fFav').textContent='♥ '+t('fav');$('#fCau').textContent='● '+t('cau');$('#fReset').textContent='↺ '+t('reset');
+ $('#type').innerHTML=`<option value="">${t('allT')}</option>`+T.map((x,i)=>`<option value="${x}">${tn(x)}</option>`).join('');$('#type').value=S.type;
+ $('#sort').innerHTML=[['num','sNum'],['az','sAz'],['za','sZa'],['rev','sRev']].map(([v,k])=>`<option value="${v}">${t(k)}</option>`).join('');$('#sort').value=S.sort;
+ $('#gens').innerHTML=`<button class="chip ${!S.gen?'on':''}" data-gen="0">${t('gen')}: ★</button>`+ROM.map((r,i)=>`<button class="chip ${S.gen===i+1?'on':''}" data-gen="${i+1}">${r}</button>`).join('');
+ [['fLeg','leg'],['fMyth','myth'],['fFav','fav'],['fCau','cau']].forEach(([id,k])=>$('#'+id).classList.toggle('on',S[k]));
+ progress();
+}
+function progress(){const n=CAU.size;$('#ptxt').textContent=`${n}/1025 ${t('prog')}`;$('#pbar').style.width=(n/1025*100)+'%'}
+
+/* ---------- list ---------- */
+function filtered(){
+ const raw=S.q.trim(),isNum=/^#?\d+$/.test(raw),num=isNum?+raw.replace('#',''):0,q=norm(raw);
+ let r=ALL.filter(p=>{
+  if(S.type&&!p.t.includes(S.type))return false;
+  if(S.gen&&p.g!==S.gen)return false;
+  if(S.leg&&!p.l)return false;if(S.myth&&!p.m)return false;
+  if(S.fav&&!FAV.has(p.id))return false;if(S.cau&&!CAU.has(p.id))return false;
+  if(raw){if(isNum)return p.id===num||String(p.id).startsWith(String(num));
+   return norm(p.n.en).includes(q)||norm(p.n.nl).includes(q)}
+  return true});
+ if(S.sort==='rev')r.reverse();
+ if(S.sort==='az'||S.sort==='za'){r.sort((a,b)=>nm(a).localeCompare(nm(b),S.lang));if(S.sort==='za')r.reverse()}
+ return r;
+}
+const card=p=>`<div class="card" data-go="${p.id}" style="--c:${TC[p.t[0]]}"><span class="no">#${pad(p.id)}</span>
+<div class="qa"><button class="f ${FAV.has(p.id)?'on':''}" data-act="fav" data-id="${p.id}">♥</button><button class="c ${CAU.has(p.id)?'on':''}" data-act="cau" data-id="${p.id}">●</button></div>
+<img loading="lazy" data-id="${p.id}" src="${ART(p.id)}" alt="${nm(p)}"><h3>${nm(p)}</h3><div class="tys">${p.t.map(chip).join('')}</div></div>`;
+function renderList(){
+ list=filtered();shown=0;$('#grid').innerHTML='';
+ $('#count').textContent=`${list.length} / 1025 ${t('res')}`;
+ if(!list.length)$('#grid').innerHTML=`<div class="empty" style="grid-column:1/-1">${t('none')}</div>`;
+ more();
+}
+function more(){
+ const f=list.slice(shown,shown+60);if(!f.length)return;
+ $('#grid').insertAdjacentHTML('beforeend',f.map(card).join(''));shown+=f.length;
+ io.unobserve($('#sent'));io.observe($('#sent'));
+}
+const io=new IntersectionObserver(e=>{if(e[0].isIntersecting&&shown<list.length)more()},{rootMargin:'600px'});
+document.addEventListener('error',e=>{const i=e.target;if(i.tagName==='IMG'&&i.dataset.id&&!i.dataset.fb){i.dataset.fb=1;i.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i.dataset.id}.png`}},true);
+
+/* ---------- stats ---------- */
+function renderStats(){
+ const tc=T.map(x=>[x,ALL.filter(p=>p.t.includes(x)).length]),mt=Math.max(...tc.map(a=>a[1]));
+ const gc=ROM.map((r,i)=>[i+1,ALL.filter(p=>p.g===i+1).length]),mg=Math.max(...gc.map(a=>a[1]));
+ $('#statsView').innerHTML=`<div class="big"><div><b>1025</b>${t('total')}</div><div><b>${CAU.size}</b>${t('cau')}</div><div><b>${FAV.size}</b>${t('fav')}</div><div><b>${ALL.filter(p=>p.l).length}</b>${t('leg')}</div><div><b>${ALL.filter(p=>p.m).length}</b>${t('myth')}</div></div>
+ <div class="dash"><div class="panel"><h4>${t('byT')}</h4>${tc.map(([x,n])=>`<button class="row" data-type="${x}"><span>${tn(x)}</span><em><i style="width:${n/mt*100}%;background:${TC[x]}"></i></em><b>${n}</b></button>`).join('')}</div>
+ <div class="panel"><h4>${t('byG')}</h4>${gc.map(([g,n])=>`<button class="row" data-gen="${g}" data-show="1"><span>${t('cnt')} ${ROM[g-1]}</span><em><i style="width:${n/mg*100}%;background:var(--ac)"></i></em><b>${n}</b></button>`).join('')}</div></div>`;
+}
+function setView(v){S.view=v;$('#listView').hidden=v!=='list';$('#statsView').hidden=v!=='stats';if(v==='stats')renderStats();applyLang();window.scrollTo(0,0)}
+
+/* ---------- detail ---------- */
+const pid=u=>+u.match(/\/(\d+)\/?$/)[1];
+function req(d){
+ if(!d)return'';const a=[];
+ if(d.min_level)a.push(`${t('lvl')} ${d.min_level}`);
+ if(d.item)a.push(pretty(d.item.name));
+ if(d.held_item)a.push(`${t('hold')} ${pretty(d.held_item.name)}`);
+ if(d.min_happiness||d.min_affection)a.push(t('happy'));
+ if(d.time_of_day)a.push(t(d.time_of_day==='day'?'day':'night'));
+ if(d.known_move)a.push(pretty(d.known_move.name));
+ if(d.location)a.push(pretty(d.location.name));
+ if(d.trigger.name==='trade')a.push(t('trade'));
+ if(!a.length)a.push(d.trigger.name==='level-up'?t('lvlup'):pretty(d.trigger.name));
+ return a.join(' · ');
+}
+function evoNode(n){
+ const id=pid(n.species.url),p=BY[id];
+ const me=`<button class="evo ${id===cur?'me':''}" data-go="${id}"><img loading="lazy" data-id="${id}" src="${ART(id)}" alt=""><small>#${pad(id)}</small><b>${p?nm(p):pretty(n.species.name)}</b></button>`;
+ if(!n.evolves_to.length)return me;
+ return `<div class="kid">${me}<div class="kids">${n.evolves_to.map(c=>`<div class="kid"><div class="req">→<br>${req(c.evolution_details[0])}</div>${evoNode(c)}</div>`).join('')}</div></div>`;
+}
+const pick=(arr,k)=>{const l=arr.filter(x=>x.language.name===S.lang);return l.length?[l[l.length-1],0]:[[...arr.filter(x=>x.language.name==='en')].pop(),S.lang==='nl']};
+async function showModal(id){
+ cur=id;const p=BY[id],m=$('#modal');m.classList.add('on');document.body.classList.add('lock');
+ const col=TC[p.t[0]];
+ m.innerHTML=`<div class="sheet" style="--c:${col}"><div class="sk"><div class="ball"></div></div></div>`;
+ let d;try{d=await detail(id)}catch(e){if(cur===id)m.innerHTML=`<div class="sheet"><div class="empty">${navigator.onLine?t('err'):t('off')}<br><br><button data-nav="back">← ${t('back')}</button></div></div>`;return}
+ if(cur!==id)return;
+ const {p:pk,s}=d,fl=pick(s.flavor_text_entries),ge=pick(s.genera);
+ const txt=fl[0]?fl[0].flavor_text.replace(/[\f\n\r]+/g,' '):'';
+ const stats=pk.stats.map(x=>{const k=x.stat.name;return`<div class="st"><span>${t(k)}</span><b>${x.base_stat}</b><em><i style="width:${Math.min(100,x.base_stat/255*100)}%;background:${x.base_stat>=100?'#22c55e':x.base_stat>=60?'#eab308':'#ef4444'}"></i></em></div>`}).join('');
+ const tot=pk.stats.reduce((a,x)=>a+x.base_stat,0);
+ const fem=p.gr<0?null:p.gr/8*100;
+ const gender=fem===null?t('gl'):`<div class="gbar"><i style="width:${100-fem}%;background:#3b82f6"></i><i style="width:${fem}%;background:#ec4899"></i></div>♂ ${100-fem}% · ♀ ${fem}%`;
+ const single=!d.c.chain.evolves_to.length;
+ m.innerHTML=`<div class="sheet" style="--c:${col}">
+ <div class="hero"><div class="bar"><button data-nav="back">← ${t('back')}</button><span><button data-nav="prev" title="${t('prev')}">‹ ${t('prev')}</button> <button data-nav="next" title="${t('next')}">${t('next')} ›</button> <button data-nav="rand">🎲</button></span></div>
+ <small>#${pad(id)} · ${ge[0]?ge[0].genus:''}</small><h2>${nm(p)}</h2><div class="tys">${p.t.map(chip).join('')}</div>
+ <img data-id="${id}" src="${ART(id)}" alt="${nm(p)}"></div>
+ <div class="body">
+  <div><button class="chip ${FAV.has(id)?'on':''}" data-act="fav" data-id="${id}">${FAV.has(id)?t('fvd'):'♡ '+t('fv')}</button> <button class="chip ${CAU.has(id)?'on':''}" data-act="cau" data-id="${id}">${CAU.has(id)?t('cdone'):'○ '+t('cav')}</button></div>
+  <div><h4>${t('desc')}</h4><p>${txt}</p>${fl[1]?`<small style="color:var(--mu)">${t('fb')}</small>`:''}</div>
+  <div class="facts"><div><small>${t('h')}</small><b>${(pk.height/10).toFixed(1)} m</b></div><div><small>${t('w')}</small><b>${(pk.weight/10).toFixed(1)} kg</b></div><div><small>${t('gen')}</small><b>${ROM[p.g-1]}</b></div>
+   <div><small>${t('ab')}</small>${pk.abilities.map(a=>`<b>${pretty(a.ability.name)}</b>${a.is_hidden?` <small>(${t('hid')})</small>`:''}`).join('<br>')}</div>
+   <div><small>${t('gender')}</small>${gender}</div>${p.l?`<div><b>★ ${t('leg')}</b></div>`:''}${p.m?`<div><b>✦ ${t('myth')}</b></div>`:''}</div>
+  <div><h4>${t('bs')} — ${t('total')} ${tot}</h4>${stats}</div>
+  <div><h4>${t('evo')}</h4>${single?`<p style="color:var(--mu)">${t('noevo')}</p>`:''}<div class="tree">${evoNode(d.c.chain)}</div></div>
+ </div></div>`;
+ m.scrollTop=0;
+}
+function hideModal(){cur=0;$('#modal').classList.remove('on');document.body.classList.remove('lock');$('#modal').innerHTML=''}
+function route(){const m=location.hash.match(/^#\/(\d+)$/);if(m&&+m[1]>=1&&+m[1]<=1025)showModal(+m[1]);else hideModal()}
+const go=id=>{navN++;location.hash='#/'+id};
+window.addEventListener('hashchange',route);
+
+/* ---------- events ---------- */
+function toggle(set,key,id){set.has(id)?set.delete(id):set.add(id);store.set(key,[...set]);progress();
+ document.querySelectorAll(`.card[data-go="${id}"] .${key==='pdx_fav'?'f':'c'}`).forEach(b=>b.classList.toggle('on',set.has(id)));
+ if(cur===id)showModal(id);if(S.view==='stats')renderStats();if((S.fav&&key==='pdx_fav')||(S.cau&&key==='pdx_caught'))renderList()}
+document.addEventListener('click',e=>{
+ const a=e.target.closest('[data-act]');
+ if(a){e.stopPropagation();const id=+a.dataset.id;a.dataset.act==='fav'?toggle(FAV,'pdx_fav',id):toggle(CAU,'pdx_caught',id);return}
+ const n=e.target.closest('[data-nav]');
+ if(n){const k=n.dataset.nav;if(k==='back'){if(navN>0){navN--;history.back()}else location.hash=''}
+  else if(k==='prev')go(cur===1?1025:cur-1);else if(k==='next')go(cur===1025?1:cur+1);else go(1+Math.floor(Math.random()*1025));return}
+ const g=e.target.closest('[data-go]');if(g){go(+g.dataset.go);return}
+ const r=e.target.closest('.row');
+ if(r){if(r.dataset.type){S.type=r.dataset.type}else{S.gen=+r.dataset.gen}setView('list');renderList();return}
+ const c=e.target.closest('[data-gen]');if(c){S.gen=+c.dataset.gen;applyLang();renderList();return}
+ if(e.target.id==='modal'){if(navN>0){navN--;history.back()}else location.hash=''}
+});
+document.addEventListener('keydown',e=>{if(!cur||e.target.tagName==='INPUT')return;if(e.key==='Escape')location.hash='';if(e.key==='ArrowRight')go(cur===1025?1:cur+1);if(e.key==='ArrowLeft')go(cur===1?1025:cur-1)});
+let tm;$('#q').oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>{S.q=e.target.value;renderList()},150)};
+$('#type').onchange=e=>{S.type=e.target.value;renderList()};
+$('#sort').onchange=e=>{S.sort=e.target.value;renderList()};
+[['fLeg','leg'],['fMyth','myth'],['fFav','fav'],['fCau','cau']].forEach(([id,k])=>$('#'+id).onclick=()=>{S[k]=!S[k];applyLang();renderList()});
+$('#fReset').onclick=()=>{Object.assign(S,{q:'',type:'',gen:0,leg:false,myth:false,fav:false,cau:false,sort:'num'});$('#q').value='';applyLang();renderList()};
+$('#bView').onclick=()=>setView(S.view==='list'?'stats':'list');
+$('#bRand').onclick=()=>go(1+Math.floor(Math.random()*1025));
+$('#bTheme').onclick=()=>{S.theme=S.theme==='dark'?'light':'dark';store.set('pdx_theme',S.theme);applyLang()};
+$('#lang').onchange=e=>{S.lang=e.target.value;store.set('pdx_lang',S.lang);applyLang();renderList();if(S.view==='stats')renderStats();if(cur)showModal(cur)};
+window.addEventListener('offline',()=>{});
+applyLang();boot();
+</script>
+</body>
+</html>
