@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POKÉDEX 3.0</title>
+<style>
+:root{--bg:#0f1220;--panel:#181c30;--panel2:#212640;--tx:#eef0fa;--mu:#9aa0c0;--ac:#ef4444;--bd:#2b3152;--sh:0 8px 28px rgba(0,0,0,.35)}
+[data-theme=light]{--bg:#f1f3fa;--panel:#fff;--panel2:#e9ecf7;--tx:#1b1f36;--mu:#5d6384;--bd:#d9ddee;--sh:0 8px 24px rgba(40,50,110,.14)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);transition:background .3s,color .3s}
+body.lock{overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:var(--panel2);padding:.55rem .9rem;border-radius:12px;transition:transform .15s,background .2s}
+button:hover{transform:translateY(-1px)}button:active{transform:scale(.96)}
+#load{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;text-align:center;padding:2rem;transition:opacity .5s}
+#load.off{opacity:0;pointer-events:none}
+.ball{width:84px;height:84px;border-radius:50%;background:linear-gradient(#ef4444 0 46%,#222 46% 54%,#fff 54%);border:5px solid #222;position:relative;animation:spin 1.1s linear infinite}
+.ball:after{content:"";position:absolute;inset:50% auto auto 50%;width:26px;height:26px;margin:-13px;background:#fff;border:5px solid #222;border-radius:50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lbar{width:min(320px,80vw);height:8px;background:var(--panel2);border-radius:9px;overflow:hidden}.lbar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:.7rem 1rem}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;max-width:1300px;margin:auto}
+h1{font-size:1.45rem;letter-spacing:.04em;font-weight:900}h1 b{color:var(--ac)}
+.acts{display:flex;gap:.4rem;flex-wrap:wrap}.acts select{background:var(--panel2);border:0;border-radius:12px;padding:.5rem}
+.prog{max-width:1300px;margin:.55rem auto 0;display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--mu)}
+.prog div{flex:1;height:8px;border-radius:9px;background:var(--panel2);overflow:hidden}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#eab308);transition:width .5s}
+.filters{max-width:1300px;margin:.6rem auto 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.filters input[type=search],.filters select{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:.6rem .8rem}
+.filters input[type=search]{flex:1 1 220px;min-width:0}
+.chip{border:1px solid var(--bd);background:var(--panel);font-size:.85rem;padding:.45rem .8rem;border-radius:99px}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.gens{max-width:1300px;margin:.5rem auto 0;display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.2rem}.gens .chip{flex:none}
+main{max-width:1300px;margin:auto;padding:1rem}
+#count{color:var(--mu);font-size:.9rem;margin-bottom:.7rem}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.9rem}
+.card{position:relative;background:var(--panel);border:1px solid var(--bd);border-radius:20px;padding:.8rem;text-align:center;cursor:pointer;box-shadow:var(--sh);overflow:hidden;animation:pop .35s both;transition:transform .2s}
+.card:hover{transform:translateY(-4px) scale(1.02)}
+.card:before{content:"";position:absolute;width:140%;aspect-ratio:1;left:-20%;top:-35%;background:var(--c);opacity:.18;border-radius:50%}
+@keyframes pop{from{opacity:0;transform:translateY(12px)}}
+.card img{position:relative;width:100%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
+.no{position:absolute;left:.7rem;top:.6rem;font-weight:800;font-size:.8rem;color:var(--mu)}
+.card h3{font-size:1rem;margin:.2rem 0 .4rem;position:relative}
+.tys{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap;position:relative}
+.ty{color:#fff;font-size:.72rem;font-weight:700;padding:.18rem .6rem;border-radius:99px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.qa{position:absolute;right:.4rem;top:.4rem;display:flex;flex-direction:column;gap:.25rem;z-index:2}
+.qa button{padding:.2rem .4rem;border-radius:50%;font-size:.85rem;opacity:.55;background:var(--panel2)}.qa button.on{opacity:1}
+.qa .f.on{background:#ec4899}.qa .c.on{background:#22c55e}
+.empty{text-align:center;color:var(--mu);padding:3rem 1rem}
+#sent{height:2px}
+#modal{position:fixed;inset:0;z-index:50;background:rgba(5,8,20,.65);backdrop-filter:blur(6px);display:none;overflow-y:auto;padding:1rem}
+#modal.on{display:block;animation:fade .25s}@keyframes fade{from{opacity:0}}
+.sheet{max-width:860px;margin:0 auto;background:var(--panel);border-radius:26px;overflow:hidden;box-shadow:var(--sh);animation:up .35s}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.hero{background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 40%,#000));padding:1rem 1rem 0;color:#fff;text-align:center}
+.bar{display:flex;gap:.4rem;justify-content:space-between;flex-wrap:wrap}.bar button{background:rgba(255,255,255,.2);color:#fff}
+.hero img{width:min(300px,70vw);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4));animation:float 3.5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.hero h2{font-size:1.9rem}.hero .tys{margin:.5rem 0 1rem}.hero .ty{background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.4)}
+.body{padding:1.2rem;display:grid;gap:1.3rem}
+.body h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.5rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem}
+.facts div{background:var(--panel2);border-radius:14px;padding:.7rem}.facts small{display:block;color:var(--mu);font-size:.75rem}
+.st{display:grid;grid-template-columns:110px 36px 1fr;gap:.5rem;align-items:center;font-size:.88rem;margin:.3rem 0}
+.st span{color:var(--mu)}.st em{height:9px;background:var(--panel2);border-radius:9px;overflow:hidden}.st em i{display:block;height:100%;border-radius:9px;transition:width .8s}
+.gbar{display:flex;height:12px;border-radius:9px;overflow:hidden;background:var(--panel2)}.gbar i{display:block;height:100%}
+.tree,.kid,.kids{display:flex;align-items:center;gap:.6rem}.tree{flex-wrap:wrap}.kids{flex-direction:column;align-items:flex-start}
+.req{font-size:.72rem;color:var(--mu);max-width:110px;text-align:center}
+.evo{display:flex;flex-direction:column;align-items:center;width:104px;padding:.4rem;border-radius:16px;background:var(--panel2);font-size:.8rem}
+.evo img{width:84px;height:84px;object-fit:contain}.evo small{color:var(--mu)}.evo.me{outline:2px solid var(--ac)}
+.sk{height:60vh;display:flex;align-items:center;justify-content:center}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:20px;padding:1rem}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.7rem;margin-bottom:1rem}.big div{background:var(--panel);border:1px solid var(--bd);border-radius:18px;padding:1rem;font-size:.85rem;color:var(--mu)}.big b{display:block;font-size:1.8rem;color:var(--tx)}
+.row{display:grid;grid-template-columns:90px 1fr 40px;gap:.5rem;align-items:center;font-size:.85rem;margin:.35rem 0;cursor:pointer;background:none;width:100%;text-align:left;padding:.1rem}
+.row em{height:12px;border-radius:9px;background:var(--panel2);overflow:hidden}.row em i{display:block;height:100%}
+@media(max-width:560px){#grid{grid-template-columns:repeat(2,1fr);gap:.6rem}h1{font-size:1.2rem}.st{grid-template-columns:90px 32px 1fr}.hero h2{font-size:1.5rem}#modal{padding:.4rem}.kid{flex-direction:column;align-items:flex-start}}
+/* ===== POKÉDEX 3.0 ===== */
+:root{--ac:#ef4444}
+.bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(60vmax 60vmax at 10% -10%,color-mix(in srgb,var(--ac) 24%,transparent),transparent 60%),radial-gradient(50vmax 50vmax at 100% 20%,rgba(99,102,241,.2),transparent 60%),radial-gradient(40vmax 40vmax at 40% 115%,rgba(16,185,129,.13),transparent 60%);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:scale(1.12) translate(-2%,2%)}}
+header{background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(18px) saturate(1.4)}
+.logo{display:inline-block;width:1em;height:1em;border-radius:50%;margin-right:.45rem;vertical-align:-.12em;background:linear-gradient(var(--ac) 0 42%,#222 42% 58%,#fff 58%);border:2px solid #222;transition:transform .7s}
+h1:hover .logo{transform:rotate(360deg)}
+.tabs{display:flex;gap:.2rem;background:var(--panel);border:1px solid var(--bd);padding:.22rem;border-radius:99px}
+.tabs button{background:none;border-radius:99px;padding:.42rem .9rem;font-weight:600;font-size:.88rem;white-space:nowrap}
+.tabs button.on{background:var(--ac);color:#fff;box-shadow:0 4px 14px -4px var(--ac)}
+.acts button,.acts select{background:var(--panel);border:1px solid var(--bd)}
+.acts select{border-radius:12px;padding:.5rem}
+[data-shiny].on{background:linear-gradient(135deg,#f59e0b,#ec4899)!important;color:#fff;border-color:transparent!important;box-shadow:0 4px 16px -4px #ec4899}
+[data-shiny][disabled]{opacity:.5;cursor:not-allowed}
+.fx{display:contents}#fToggle{display:none}
+.chip{transition:all .2s}.chip:hover{border-color:var(--ac)}
+.chip.on{box-shadow:0 4px 14px -5px var(--ac)}
+#grid{gap:1rem}
+.card{background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(6px);animation:pop .45s both;animation-delay:var(--d,0ms);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 18px 40px -14px var(--c);border-color:var(--c)}
+.card:before{background:radial-gradient(circle,var(--c),var(--c2));opacity:.2;transition:opacity .3s,transform .5s}
+.card:hover:before{opacity:.38;transform:scale(1.15)}
+.card:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.28) 50%,transparent 62%);transform:translateX(-120%);transition:transform .7s;pointer-events:none}
+.card:hover:after{transform:translateX(120%)}
+.card img{transition:transform .35s cubic-bezier(.2,.8,.2,1)}.card:hover img{transform:scale(1.1) rotate(-3deg)}
+.shb{display:none;position:absolute;left:.6rem;bottom:.5rem;font-size:.95rem;z-index:2}
+body.shiny .card.has-sh .shb{display:block;animation:tw 1.8s ease-in-out infinite}
+body.shiny .card.nosh .shb{display:block;filter:grayscale(1);opacity:.35}
+@keyframes tw{50%{transform:scale(1.35) rotate(20deg)}}
+body.shiny .card.has-sh{border-color:#f59e0b88}
+.cell,.rt,.rb{animation:pop .4s both}
+.hero{position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.12);left:50%;top:45%;transform:translateX(-50%)}
+body.shiny .hero:after{content:"✨";position:absolute;right:1.2rem;top:4.2rem;font-size:1.6rem;animation:tw 1.8s infinite}
+.hero>*{position:relative}
+.hrow{display:flex;gap:.5rem;justify-content:center;margin:.2rem 0 .6rem;flex-wrap:wrap}.hrow button{background:rgba(255,255,255,.2);color:#fff}
+.hrow button.on{background:linear-gradient(135deg,#f59e0b,#ec4899)}
+.mtabs{display:flex;gap:.3rem;background:var(--panel2);padding:.25rem;border-radius:99px}.mtabs button{flex:1;background:none;border-radius:99px;font-weight:700}.mtabs button.on{background:var(--ac);color:#fff}
+.sheet[data-tab=info] .pb,.sheet[data-tab=battle] .pi{display:none}
+.pi,.pb{display:grid;gap:1.3rem;animation:fade .3s}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem}
+.tiles div{background:var(--panel2);border-radius:14px;padding:.7rem}.tiles small{display:block;color:var(--mu);font-size:.72rem}.tiles b{font-size:1.1rem}
+.rad{display:grid;grid-template-columns:200px 1fr;gap:1rem;align-items:center}
+.rad svg{width:100%;height:auto}
+.tb{width:100%;border-collapse:collapse;font-size:.85rem}.tb th{color:var(--mu);font-weight:600;text-align:right;font-size:.72rem}.tb th:first-child,.tb td:first-child{text-align:left}.tb td{text-align:right;padding:.28rem 0;border-top:1px solid var(--bd)}.tb td:first-child{color:var(--mu)}
+.eg{background:var(--panel2);border-radius:14px;padding:.7rem}.eg h5{font-size:.78rem;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.08em}
+.eg.w h5{color:#ef4444}.eg.r h5{color:#22c55e}.eg.i h5{color:#94a3b8}.eg.s h5{color:#f59e0b}
+.tys.l{justify-content:flex-start}.none{color:var(--mu)}
+.egs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.7rem}
+.eff{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:.4rem}
+.cell{position:relative;border-radius:12px;padding:.45rem .2rem .3rem;text-align:center;font-size:.68rem;background:var(--panel2);overflow:hidden;border:1px solid var(--bd)}
+.cell i{position:absolute;inset:0 0 auto;height:4px;background:var(--c)}.cell b{display:block;font-size:1rem}
+.m0{background:#111827;color:#9ca3af}.m025{background:#14532d;color:#fff}.m05{background:#166534;color:#dcfce7}.m2{background:#9a3412;color:#fff}.m4{background:#991b1b;color:#fff}
+.rts{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.rt{position:relative;overflow:hidden;text-align:left;color:#fff;padding:1.1rem;border-radius:24px;min-height:210px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:var(--sh);transition:transform .25s,box-shadow .25s;display:flex;flex-direction:column;gap:.3rem}
+.rt:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 44px -14px var(--c1)}
+.rt .rm{position:absolute;right:-30px;top:-20px;width:190px;opacity:.55;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));transition:transform .4s}.rt:hover .rm{transform:scale(1.1) rotate(-6deg)}
+.rt .rg{font-weight:900;font-size:.8rem;background:rgba(0,0,0,.25);border-radius:99px;padding:.1rem .6rem;align-self:flex-start}
+.rt h3{font-size:1.6rem;position:relative}.rt p{font-size:.85rem;opacity:.92;max-width:62%;position:relative}
+.rs{display:flex;margin-top:auto;position:relative}.rs img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));margin-right:-8px}
+.rp{height:7px;border-radius:9px;background:rgba(0,0,0,.28);overflow:hidden;position:relative}.rp i{display:block;height:100%;background:#fff;border-radius:9px}
+.rt small{position:relative;opacity:.95}
+.rb{position:relative;overflow:hidden;color:#fff;border-radius:24px;padding:1.1rem 1.2rem;margin-bottom:1rem;background:linear-gradient(120deg,var(--c1),var(--c2));box-shadow:var(--sh);display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.rb h2{font-size:1.7rem}.rb p{opacity:.92;font-size:.9rem}.rb .rs button{background:none;padding:0}.rb .rs{margin:0}.rb .rs img{transition:transform .2s}.rb .rs img:hover{transform:scale(1.15)}
+.rb .clr{background:rgba(0,0,0,.28);color:#fff}
+#rnd{position:fixed;inset:0;z-index:60;background:rgba(5,8,20,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
+#rnd.on{display:flex;animation:fade .25s}
+.rcard{position:relative;width:min(440px,100%);margin:auto;text-align:center;color:#fff;border-radius:28px;padding:1.2rem;background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 35%,#000));box-shadow:0 30px 80px -20px var(--c);animation:up .35s}
+.rcard.rolling{animation:shake .25s infinite}
+@keyframes shake{25%{transform:translateX(-4px) rotate(-.6deg)}75%{transform:translateX(4px) rotate(.6deg)}}
+.rcard .x{position:absolute;right:.8rem;top:.8rem;background:rgba(255,255,255,.2);color:#fff;border-radius:50%;padding:.3rem .6rem}
+.rimg{height:min(280px,60vw);display:flex;align-items:center;justify-content:center}.rimg img{height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4));animation:float 3.5s ease-in-out infinite}
+.rcard .ball{width:70px;height:70px}
+.rcard h2{font-size:1.9rem}.rcard .tys{margin:.5rem 0}.rcard .ty{background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.4)}
+.rf{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.6rem 0}.rf div{background:rgba(0,0,0,.25);border-radius:12px;padding:.4rem .2rem;font-size:.82rem}.rf small{display:block;opacity:.8;font-size:.68rem}
+.rdsc{font-size:.85rem;opacity:.95;min-height:2.4em;margin-bottom:.6rem}
+.ra{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}.ra button{background:rgba(255,255,255,.22);color:#fff;font-weight:700}.ra .pri{background:#fff;color:#111}
+.ra label{width:100%;font-size:.82rem;opacity:.95}
+@media(max-width:700px){
+ .tabs{order:3;width:100%}.tabs button{flex:1;padding:.5rem .2rem;font-size:.8rem}
+ #fToggle{display:inline-block}.fx{display:none;width:100%;flex-wrap:wrap;gap:.5rem}.fx.open{display:flex}.fx select{flex:1 1 40%}
+ .rad{grid-template-columns:1fr}.rf{grid-template-columns:repeat(2,1fr)}.rt p{max-width:70%}.rb h2{font-size:1.4rem}
+ .acts{width:100%}.acts button,.acts select{flex:1;padding:.5rem .3rem;font-size:.82rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bgfx"></div>
+<div id="load"><div class="ball"></div><h1>POKÉDEX <b>3.0</b></h1><div class="lbar"><i id="lb"></i></div><p id="lt"></p><button id="retry" hidden></button></div>
+<header>
+ <div class="top"><h1><span class="logo"></span>POKÉDEX <b>3.0</b></h1>
+  <nav class="tabs" id="nav"><button data-view="list"></button><button data-view="regions"></button><button data-view="stats"></button></nav>
+  <div class="acts"><button id="bShiny" data-shiny></button><button id="bRand"></button>
+   <select id="lang"><option value="en">English</option><option value="nl">Nederlands</option></select><button id="bTheme">◐</button></div></div>
+ <div class="prog"><div><i id="pbar"></i></div><span id="ptxt"></span></div>
+ <div id="fbar">
+  <div class="filters"><input type="search" id="q"><button class="chip" id="fToggle"></button>
+   <div class="fx" id="fx"><select id="type"></select><select id="region"></select><select id="sort"></select>
+    <button class="chip" id="fLeg"></button><button class="chip" id="fMyth"></button><button class="chip" id="fFav"></button><button class="chip" id="fCau"></button><button class="chip" id="fReset"></button></div></div>
+  <div class="gens" id="gens"></div></div>
+</header>
+<main><div id="listView"><div id="banner"></div><div id="count"></div><div id="grid"></div><div id="sent"></div></div><div id="regView" hidden></div><div id="statsView" hidden></div></main>
+<div id="modal"></div>
+<div id="rnd"></div>
+
+<script>
+const API='https://pokeapi.co/api/v2',GQL='https://beta.pokeapi.co/graphql/v1beta/';
+const ART=id=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+const T=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const NLT=['Normaal','Vuur','Water','Elektrisch','Gras','IJs','Vechten','Gif','Grond','Vliegend','Psychisch','Insect','Gesteente','Spook','Draak','Duister','Staal','Fee'];
+const TC={normal:'#9fa19f',fire:'#e8622b',water:'#3d8fe0',electric:'#e5b80b',grass:'#4fae45',ice:'#4cc3c3',fighting:'#c03a52',poison:'#a050c8',ground:'#b97b3d',flying:'#7f9be0',psychic:'#e85a8a',bug:'#8fb21c',rock:'#b5a96b',ghost:'#6a5a9e',dragon:'#4a62d6',dark:'#5a4a4a',steel:'#6f93a6',fairy:'#e08ae0'};
+const ROM=['I','II','III','IV','V','VI','VII','VIII','IX'];
+const I={en:{search:'Search name or number…',allT:'All types',sNum:'Number 1 → 1025',sRev:'Number 1025 → 1',sAz:'Name A → Z',sZa:'Name Z → A',leg:'Legendary',myth:'Mythical',fav:'Favorites',cau:'Caught',reset:'Reset',rand:'Random',stats:'Statistics',list:'Pokédex',prog:'caught',res:'Pokémon shown',none:'No Pokémon match your filters.',h:'Height',w:'Weight',ab:'Abilities',hid:'hidden',bs:'Base stats',gender:'Gender',gl:'Genderless',m:'Male',f:'Female',gen:'Generation',evo:'Evolution family',noevo:'This Pokémon does not evolve.',back:'Back',prev:'Previous',next:'Next',desc:'Pokédex entry',hp:'HP',attack:'Attack',defense:'Defense','special-attack':'Sp. Atk','special-defense':'Sp. Def',speed:'Speed',lvl:'Level',lvlup:'Level up',trade:'Trade',happy:'High friendship',hold:'holding',day:'Daytime',night:'Night',off:'You seem to be offline. Connect to the internet and try again.',err:'Could not load Pokémon data.',retry:'Try again',loading:'Loading Pokédex…',total:'Total',byT:'Pokémon by type',byG:'Pokémon by generation',fb:'(No Dutch entry available; showing English)',cav:'Mark as caught',cdone:'Caught ✓',fv:'Favorite',fvd:'Favorited ♥',cnt:'Generation'},
+nl:{search:'Zoek naam of nummer…',allT:'Alle types',sNum:'Nummer 1 → 1025',sRev:'Nummer 1025 → 1',sAz:'Naam A → Z',sZa:'Naam Z → A',leg:'Legendarisch',myth:'Mythisch',fav:'Favorieten',cau:'Gevangen',reset:'Wissen',rand:'Willekeurig',stats:'Statistieken',list:'Pokédex',prog:'gevangen',res:'Pokémon getoond',none:'Geen Pokémon gevonden met deze filters.',h:'Lengte',w:'Gewicht',ab:'Vaardigheden',hid:'verborgen',bs:'Basiswaarden',gender:'Geslacht',gl:'Geslachtsloos',m:'Mannelijk',f:'Vrouwelijk',gen:'Generatie',evo:'Evolutiefamilie',noevo:'Deze Pokémon evolueert niet.',back:'Terug',prev:'Vorige',next:'Volgende',desc:'Pokédex-tekst',hp:'HP',attack:'Aanval',defense:'Verdediging','special-attack':'Sp. Aanv.','special-defense':'Sp. Verd.',speed:'Snelheid',lvl:'Level',lvlup:'Level omhoog',trade:'Ruilen',happy:'Hoge vriendschap',hold:'met',day:'Overdag',night:'\'s Nachts',off:'Je lijkt offline te zijn. Maak verbinding met internet en probeer opnieuw.',err:'Pokémon-gegevens konden niet worden geladen.',retry:'Opnieuw proberen',loading:'Pokédex laden…',total:'Totaal',byT:'Pokémon per type',byG:'Pokémon per generatie',fb:'(Geen Nederlandse tekst beschikbaar; Engels getoond)',cav:'Markeer als gevangen',cdone:'Gevangen ✓',fv:'Favoriet',fvd:'Favoriet ♥',cnt:'Generatie'}};
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const S={q:'',type:'',gen:0,leg:false,myth:false,fav:false,cau:false,sort:'num',view:'list',region:'',shiny:store.get('pdx_shiny',false),mtab:'info',
+ lang:store.get('pdx_lang','en'),theme:store.get('pdx_theme',matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')};
+let ALL=[],BY={},FAV=new Set(store.get('pdx_fav',[])),CAU=new Set(store.get('pdx_caught',[])),D={},CH={},cur=0,navN=0,list=[],shown=0;
+const t=k=>I[S.lang][k]||I.en[k]||k;
+const pad=n=>String(n).padStart(4,'0');
+const pretty=s=>s.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const nm=p=>p.n[S.lang]||p.n.en;
+const tn=x=>S.lang==='nl'?NLT[T.indexOf(x)]:x[0].toUpperCase()+x.slice(1);
+const chip=x=>`<span class="ty" style="background:${TC[x]}">${tn(x)}</span>`;
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const j=async u=>{const r=await fetch(u);if(!r.ok)throw Error(r.status);return r.json()};
+
+/* ---------- data ---------- */
+async function loadIndex(){
+ const c=store.get('pdx_idx_v2',null);if(c&&c.length===1025)return c;
+ try{return await loadGql()}catch(e){console.warn('GraphQL failed, using REST',e);return await loadRest()}
+}
+async function loadGql(){
+ const q=o=>`{pokemon_v2_pokemonspecies(order_by:{id:asc},limit:260,offset:${o},where:{id:{_lte:1025}}){id generation_id is_legendary is_mythical gender_rate pokemon_v2_pokemonspeciesnames(where:{pokemon_v2_language:{name:{_in:["en","nl"]}}}){name pokemon_v2_language{name}} pokemon_v2_pokemons(where:{is_default:{_eq:true}},limit:1){pokemon_v2_pokemontypes(order_by:{slot:asc}){pokemon_v2_type{name}}}}}`;
+ let done=0;
+ const pages=await Promise.all([0,260,520,780].map(async o=>{
+  const r=await fetch(GQL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q(o)})});
+  if(!r.ok)throw Error('gql');const d=await r.json();done++;$('#lb').style.width=(done*25)+'%';
+  return d.data.pokemon_v2_pokemonspecies}));
+ const out=pages.flat().map(s=>{const n={};s.pokemon_v2_pokemonspeciesnames.forEach(x=>n[x.pokemon_v2_language.name]=x.name);
+  return{id:s.id,g:s.generation_id,l:s.is_legendary,m:s.is_mythical,gr:s.gender_rate,n:{en:n.en||'#'+s.id,nl:n.nl||n.en||'#'+s.id},
+   t:(s.pokemon_v2_pokemons[0]?.pokemon_v2_pokemontypes||[]).map(x=>x.pokemon_v2_type.name)}});
+ if(out.length!==1025)throw Error('count');
+ store.set('pdx_idx_v2',out);return out;
+}
+async function detail(id){
+ if(D[id])return D[id];
+ const [p,s]=await Promise.all([j(`${API}/pokemon/${id}`),j(`${API}/pokemon-species/${id}`)]);
+ const u=s.evolution_chain.url;const c=CH[u]||(CH[u]=await j(u));
+ return D[id]={p,s,c};
+}
+
+async function loadRest(){
+ $('#lb').style.width='10%';
+ const [sp,...rest]=await Promise.all([j(`${API}/pokemon-species?limit=1025`),...T.map(x=>j(`${API}/type/${x}`)),...ROM.map((r,i)=>j(`${API}/generation/${i+1}`))]);
+ const ty={},gn={};
+ rest.slice(0,18).forEach((d,i)=>d.pokemon.forEach(x=>{const id=pid(x.pokemon.url);if(id<=1025)(ty[id]=ty[id]||[]).push([x.slot,T[i]])}));
+ rest.slice(18).forEach((d,i)=>d.pokemon_species.forEach(x=>gn[pid(x.url)]=i+1));
+ const out=sp.results.map(r=>{const id=pid(r.url),n=pretty(r.name);return{id,g:gn[id]||1,l:false,m:false,gr:-1,x:0,n:{en:n,nl:n},t:(ty[id]||[]).sort((a,b)=>a[0]-b[0]).map(a=>a[1])}}).sort((a,b)=>a.id-b.id);
+ if(out.length!==1025)throw Error('count '+out.length);
+ return out;
+}
+async function enrich(again){
+ const todo=ALL.filter(p=>p.x===0);let i=0,done=ALL.length-todo.length;
+ const worker=async()=>{while(i<todo.length){const p=todo[i++];
+  try{const s=await j(`${API}/pokemon-species/${p.id}`);const n={};s.names.forEach(x=>n[x.language.name]=x.name);
+   p.n={en:n.en||p.n.en,nl:n.nl||n.en||p.n.en};p.l=s.is_legendary;p.m=s.is_mythical;p.gr=s.gender_rate;p.x=1;done++}catch(e){}
+  if(done%40===0)$('#ptxt').textContent=`${CAU.size}/1025 ${t('prog')} · ⏳ ${done}/1025`}};
+ await Promise.all(Array.from({length:20},worker));
+ if(!again&&ALL.some(p=>p.x===0))return enrich(true);
+ if(ALL.every(p=>p.x===1))store.set('pdx_idx_v2',ALL);
+ progress();renderList();
+}
+/* ---------- boot ---------- */
+async function boot(){
+ $('#retry').hidden=true;$('#lt').textContent=t('loading');$('#lb').style.width='5%';
+ try{
+  ALL=await loadIndex();ALL.forEach(p=>BY[p.id]=p);
+  $('#lb').style.width='100%';applyLang();renderList();route();
+  if(ALL.some(p=>p.x===0))enrich();
+  setTimeout(()=>$('#load').classList.add('off'),250);
+ }catch(e){
+  console.error(e);$('#lt').textContent=(navigator.onLine?t('err')+' ('+(e&&e.message||e)+')':t('off'));
+  $('#retry').textContent=t('retry');$('#retry').hidden=false;$('.ball').style.animation='none';
+ }
+}
+$('#retry').onclick=()=>{$('.ball').style.animation='';boot()};
+
+/* ---------- 3.0 data: translations, type chart, regions ---------- */
+Object.assign(I.en,{shiny:'Shiny',on:'ON',offs:'OFF',shAv:'Shiny form available',shNo:'No shiny artwork available',regions:'Regions',region:'Region',allR:'All regions',battle:'Battle',info:'Info',weak:'Weaknesses',resist:'Resistances',immune:'Immunities',strong:'Hits super effectively (own types)',dmg:'Damage taken from each type',bstat:'Battle stats',lv:'Level 100 values',mn:'Min',mx:'Max',base:'Base',offe:'Offense',bulk:'Bulk',role:'Role',phys:'Physical attacker',spec:'Special attacker',mixed:'Mixed attacker',fast:'Fast',avg:'Average speed',slow:'Slow',filters:'Filters',again:'Roll again',open:'Open full entry',useF:'Use my current filters',explore:'Explore',starters:'Starters',pokes:'Pokémon',clear:'Clear region',rtitle:'Random Pokémon'});
+Object.assign(I.nl,{shiny:'Shiny',on:'AAN',offs:'UIT',shAv:'Shiny-vorm beschikbaar',shNo:'Geen shiny-afbeelding beschikbaar',regions:"Regio's",region:'Regio',allR:"Alle regio's",battle:'Gevecht',info:'Info',weak:'Zwaktes',resist:'Weerstanden',immune:'Immuniteiten',strong:'Super effectief tegen (eigen types)',dmg:'Ontvangen schade per type',bstat:'Gevechtsstatistieken',lv:'Waarden op level 100',mn:'Min',mx:'Max',base:'Basis',offe:'Aanval',bulk:'Bulk',role:'Rol',phys:'Fysieke aanvaller',spec:'Speciale aanvaller',mixed:'Gemengde aanvaller',fast:'Snel',avg:'Gemiddeld tempo',slow:'Traag',filters:'Filters',again:'Opnieuw gooien',open:'Open volledige pagina',useF:'Gebruik mijn huidige filters',explore:'Verken',starters:'Starters',pokes:'Pokémon',clear:'Regio wissen',rtitle:'Willekeurige Pokémon'});
+const SHINY=id=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
+const SPR=id=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+const art=id=>S.shiny?SHINY(id):ART(id);
+const M={};T.forEach(a=>M[a]={});
+'normal::rock,steel:ghost;fire:grass,ice,bug,steel:fire,water,rock,dragon;water:fire,ground,rock:water,grass,dragon;electric:water,flying:electric,grass,dragon:ground;grass:water,ground,rock:fire,grass,poison,flying,bug,dragon,steel;ice:grass,ground,flying,dragon:fire,water,ice,steel;fighting:normal,ice,rock,dark,steel:poison,flying,psychic,bug,fairy:ghost;poison:grass,fairy:poison,ground,rock,ghost:steel;ground:fire,electric,poison,rock,steel:grass,bug:flying;flying:grass,fighting,bug:electric,rock,steel;psychic:fighting,poison:psychic,steel:dark;bug:grass,psychic,dark:fire,fighting,poison,flying,ghost,steel,fairy;rock:fire,ice,flying,bug:fighting,ground,steel;ghost:psychic,ghost:dark:normal;dragon:dragon:steel:fairy;dark:psychic,ghost:fighting,dark,fairy;steel:ice,rock,fairy:fire,water,electric,steel;fairy:fighting,dragon,dark:fire,poison,steel'
+ .split(';').forEach(s=>{const[a,x,y,z]=s.split(':');[[x,2],[y,.5],[z,0]].forEach(([l,v])=>(l||'').split(',').filter(Boolean).forEach(d=>M[a][d]=v))});
+const REG=[
+{k:'kanto',n:'Kanto',a:1,b:151,c1:'#e5484d',c2:'#f5a524',s:[1,4,7],m:150,e:'Where every journey began',d:'Waar elke reis begon'},
+{k:'johto',n:'Johto',a:152,b:251,c1:'#d4a017',c2:'#7f8aa3',s:[152,155,158],m:249,e:'Tradition meets new horizons',d:'Traditie ontmoet nieuwe horizonten'},
+{k:'hoenn',n:'Hoenn',a:252,b:386,c1:'#1e88e5',c2:'#e5484d',s:[252,255,258],m:384,e:'Land and sea in balance',d:'Land en zee in balans'},
+{k:'sinnoh',n:'Sinnoh',a:387,b:493,c1:'#4f63d8',c2:'#8fa0e0',s:[387,390,393],m:483,e:'Myths of time and space',d:'Mythen van tijd en ruimte'},
+{k:'unova',n:'Unova',a:494,b:649,c1:'#3b3f58',c2:'#8a94b8',s:[495,498,501],m:643,e:'A bustling land of ideals',d:'Een bruisend land van idealen'},
+{k:'kalos',n:'Kalos',a:650,b:721,c1:'#3b6ff5',c2:'#e86aa5',s:[650,653,656],m:716,e:'Beauty, style and Mega power',d:'Schoonheid, stijl en Mega-kracht'},
+{k:'alola',n:'Alola',a:722,b:809,c1:'#ff8a3d',c2:'#12b5a3',s:[722,725,728],m:791,e:'Island life and Z-Moves',d:'Eilandleven en Z-Moves'},
+{k:'galar',n:'Galar',a:810,b:905,c1:'#8b5cf6',c2:'#ec4899',s:[810,813,816],m:888,e:'Stadium lights and Dynamax',d:'Stadionlichten en Dynamax'},
+{k:'paldea',n:'Paldea',a:906,b:1025,c1:'#e5484d',c2:'#7c3aed',s:[906,909,912],m:1007,e:'Open-world adventure and Terastallizing',d:'Open-wereldavontuur en Terastalliseren'}];
+const RG={};REG.forEach(r=>RG[r.k]=r);
+const regionOf=id=>REG.find(r=>id>=r.a&&id<=r.b)||REG[0];
+S.rf=false;
+/* ---------- UI text ---------- */
+const nAct=()=>[S.type,S.gen,S.region,S.leg,S.myth,S.fav,S.cau].filter(Boolean).length;
+const shLabels=()=>document.querySelectorAll('[data-shiny]').forEach(b=>{b.classList.toggle('on',S.shiny);if(!b.disabled)b.textContent='✨ '+t('shiny')+': '+(S.shiny?t('on'):t('offs'))});
+function applyLang(){
+ document.documentElement.lang=S.lang;document.documentElement.dataset.theme=S.theme;
+ $('#lang').value=S.lang;$('#q').placeholder=t('search');
+ const nv={list:'📖 '+t('list'),regions:'🗺 '+t('regions'),stats:'📊 '+t('stats')};
+ document.querySelectorAll('#nav button').forEach(b=>{b.textContent=nv[b.dataset.view];b.classList.toggle('on',b.dataset.view===S.view)});
+ $('#bRand').textContent='🎲 '+t('rand');shLabels();
+ $('#fLeg').textContent='★ '+t('leg');$('#fMyth').textContent='✦ '+t('myth');$('#fFav').textContent='♥ '+t('fav');$('#fCau').textContent='● '+t('cau');$('#fReset').textContent='↺ '+t('reset');
+ $('#fToggle').textContent='⚙ '+t('filters')+(nAct()?` (${nAct()})`:'');
+ $('#type').innerHTML=`<option value="">${t('allT')}</option>`+T.map(x=>`<option value="${x}">${tn(x)}</option>`).join('');$('#type').value=S.type;
+ $('#region').innerHTML=`<option value="">${t('allR')}</option>`+REG.map(r=>`<option value="${r.k}">${r.n}</option>`).join('');$('#region').value=S.region;
+ $('#sort').innerHTML=[['num','sNum'],['az','sAz'],['za','sZa'],['rev','sRev']].map(([v,k])=>`<option value="${v}">${t(k)}</option>`).join('');$('#sort').value=S.sort;
+ $('#gens').innerHTML=`<button class="chip ${!S.gen?'on':''}" data-gen="0">${t('gen')}: ★</button>`+ROM.map((r,i)=>`<button class="chip ${S.gen===i+1?'on':''}" data-gen="${i+1}">${r}</button>`).join('');
+ [['fLeg','leg'],['fMyth','myth'],['fFav','fav'],['fCau','cau']].forEach(([id,k])=>$('#'+id).classList.toggle('on',S[k]));
+ banner();progress();
+}
+function progress(){const n=CAU.size;$('#ptxt').textContent=`${n}/1025 ${t('prog')}`;$('#pbar').style.width=(n/1025*100)+'%'}
+function applyShiny(){
+ store.set('pdx_shiny',S.shiny);document.body.classList.toggle('shiny',S.shiny);
+ document.querySelectorAll('img[data-id]').forEach(i=>{i.dataset.fb=0;i.dataset.sh=+S.shiny;delete i.dataset.nosh;const c=i.closest('.card');if(c)c.classList.remove('has-sh','nosh');i.src=art(+i.dataset.id)});
+ shLabels();
+}
+
+/* ---------- list ---------- */
+function filtered(){
+ const raw=S.q.trim(),isNum=/^#?\d+$/.test(raw),num=isNum?+raw.replace('#',''):0,q=norm(raw),rg=RG[S.region];
+ let r=ALL.filter(p=>{
+  if(S.type&&!p.t.includes(S.type))return false;
+  if(S.gen&&p.g!==S.gen)return false;
+  if(rg&&(p.id<rg.a||p.id>rg.b))return false;
+  if(S.leg&&!p.l)return false;if(S.myth&&!p.m)return false;
+  if(S.fav&&!FAV.has(p.id))return false;if(S.cau&&!CAU.has(p.id))return false;
+  if(raw){if(isNum)return p.id===num||String(p.id).startsWith(String(num));
+   return norm(p.n.en).includes(q)||norm(p.n.nl).includes(q)}
+  return true});
+ if(S.sort==='rev')r.reverse();
+ if(S.sort==='az'||S.sort==='za'){r.sort((a,b)=>nm(a).localeCompare(nm(b),S.lang));if(S.sort==='za')r.reverse()}
+ return r;
+}
+const card=(p,i)=>`<div class="card" data-go="${p.id}" style="--c:${TC[p.t[0]]};--c2:${TC[p.t[1]||p.t[0]]};--d:${(i%24)*16}ms"><span class="no">#${pad(p.id)}</span><span class="shb" title="${t('shAv')}">✨</span>
+<div class="qa"><button class="f ${FAV.has(p.id)?'on':''}" data-act="fav" data-id="${p.id}">♥</button><button class="c ${CAU.has(p.id)?'on':''}" data-act="cau" data-id="${p.id}">●</button></div>
+<img loading="lazy" data-id="${p.id}" data-sh="${+S.shiny}" src="${art(p.id)}" alt="${nm(p)}"><h3>${nm(p)}</h3><div class="tys">${p.t.map(chip).join('')}</div></div>`;
+function renderList(){
+ list=filtered();shown=0;$('#grid').innerHTML='';
+ $('#count').textContent=`${list.length} / 1025 ${t('res')}`;
+ $('#fToggle').textContent='⚙ '+t('filters')+(nAct()?` (${nAct()})`:'');
+ if(!list.length)$('#grid').innerHTML=`<div class="empty" style="grid-column:1/-1">${t('none')}</div>`;
+ banner();more();
+}
+function more(){
+ const f=list.slice(shown,shown+60);if(!f.length)return;
+ $('#grid').insertAdjacentHTML('beforeend',f.map(card).join(''));shown+=f.length;
+ io.unobserve($('#sent'));io.observe($('#sent'));
+}
+const io=new IntersectionObserver(e=>{if(e[0].isIntersecting&&shown<list.length)more()},{rootMargin:'600px'});
+document.addEventListener('error',e=>{const i=e.target;if(!i||i.tagName!=='IMG'||!i.dataset.id)return;const f=+i.dataset.fb||0;
+ if(f===0&&i.dataset.sh==='1'){i.dataset.fb=1;i.dataset.nosh=1;const c=i.closest('.card');if(c)c.classList.add('nosh');i.src=ART(i.dataset.id)}
+ else if(f<2){i.dataset.fb=2;i.src=SPR(i.dataset.id)}},true);
+document.addEventListener('load',e=>{const i=e.target;if(i&&i.tagName==='IMG'&&i.dataset.sh==='1'&&!i.dataset.nosh){const c=i.closest('.card');if(c)c.classList.add('has-sh')}},true);
+
+/* ---------- regions ---------- */
+function banner(){
+ const b=$('#banner'),r=RG[S.region];
+ document.body.style.setProperty('--ac',r?r.c1:'');
+ if(!r){b.innerHTML='';return}
+ const n=r.b-r.a+1,c=ALL.filter(p=>p.id>=r.a&&p.id<=r.b&&CAU.has(p.id)).length;
+ b.innerHTML=`<div class="rb" style="--c1:${r.c1};--c2:${r.c2}"><div><small>${t('gen')} ${ROM[REG.indexOf(r)]} · #${pad(r.a)}–#${pad(r.b)}</small><h2>${r.n}</h2><p>${S.lang==='nl'?r.d:r.e}</p><small>${n} ${t('pokes')} · ${c}/${n} ${t('prog')}</small></div>
+ <div class="rs">${r.s.map(id=>`<button data-go="${id}" title="${nm(BY[id])}"><img data-id="${id}" data-sh="${+S.shiny}" src="${art(id)}" alt="${nm(BY[id])}"></button>`).join('')}</div>
+ <button class="clr" data-clr="1">✕ ${t('clear')}</button></div>`;
+}
+function renderRegions(){
+ $('#regView').innerHTML=`<div class="rts">${REG.map((r,i)=>{const n=r.b-r.a+1,c=ALL.filter(p=>p.id>=r.a&&p.id<=r.b&&CAU.has(p.id)).length;
+  return`<button class="rt" data-region="${r.k}" style="--c1:${r.c1};--c2:${r.c2};animation-delay:${i*50}ms"><img class="rm" loading="lazy" data-id="${r.m}" data-sh="${+S.shiny}" src="${art(r.m)}" alt="">
+  <span class="rg">${t('gen')} ${ROM[i]}</span><h3>${r.n}</h3><p>${S.lang==='nl'?r.d:r.e}</p>
+  <div class="rs">${r.s.map(id=>`<img loading="lazy" data-id="${id}" data-sh="${+S.shiny}" src="${art(id)}" alt="${BY[id]?nm(BY[id]):''}">`).join('')}</div>
+  <div class="rp"><i style="width:${c/n*100}%"></i></div><small>${n} ${t('pokes')} · ${c}/${n} ${t('prog')} · ${t('explore')} →</small></button>`}).join('')}</div>`;
+}
+
+/* ---------- stats ---------- */
+function renderStats(){
+ const tc=T.map(x=>[x,ALL.filter(p=>p.t.includes(x)).length]),mt=Math.max(...tc.map(a=>a[1]));
+ const gc=ROM.map((r,i)=>[i+1,ALL.filter(p=>p.g===i+1).length]),mg=Math.max(...gc.map(a=>a[1]));
+ $('#statsView').innerHTML=`<div class="big"><div><b>1025</b>${t('total')}</div><div><b>${CAU.size}</b>${t('cau')}</div><div><b>${FAV.size}</b>${t('fav')}</div><div><b>${ALL.filter(p=>p.l).length}</b>${t('leg')}</div><div><b>${ALL.filter(p=>p.m).length}</b>${t('myth')}</div></div>
+ <div class="dash"><div class="panel"><h4>${t('byT')}</h4>${tc.map(([x,n])=>`<button class="row" data-type="${x}"><span>${tn(x)}</span><em><i style="width:${n/mt*100}%;background:${TC[x]}"></i></em><b>${n}</b></button>`).join('')}</div>
+ <div class="panel"><h4>${t('byG')}</h4>${gc.map(([g,n])=>`<button class="row" data-gen="${g}" data-show="1"><span>${t('cnt')} ${ROM[g-1]}</span><em><i style="width:${n/mg*100}%;background:var(--ac)"></i></em><b>${n}</b></button>`).join('')}</div>
+ <div class="panel"><h4>${t('regions')}</h4>${REG.map(r=>`<button class="row" data-region="${r.k}"><span>${r.n}</span><em><i style="width:${(r.b-r.a+1)/mg*100}%;background:${r.c1}"></i></em><b>${r.b-r.a+1}</b></button>`).join('')}</div></div>`;
+}
+function setView(v){S.view=v;$('#listView').hidden=v!=='list';$('#regView').hidden=v!=='regions';$('#statsView').hidden=v!=='stats';$('#fbar').hidden=v!=='list';
+ if(v==='stats')renderStats();if(v==='regions')renderRegions();applyLang();window.scrollTo(0,0)}
+/* ---------- detail ---------- */
+const pid=u=>+u.match(/\/(\d+)\/?$/)[1];
+function req(d){
+ if(!d)return'';const a=[];
+ if(d.min_level)a.push(`${t('lvl')} ${d.min_level}`);
+ if(d.item)a.push(pretty(d.item.name));
+ if(d.held_item)a.push(`${t('hold')} ${pretty(d.held_item.name)}`);
+ if(d.min_happiness||d.min_affection)a.push(t('happy'));
+ if(d.time_of_day)a.push(t(d.time_of_day==='day'?'day':'night'));
+ if(d.known_move)a.push(pretty(d.known_move.name));
+ if(d.location)a.push(pretty(d.location.name));
+ if(d.trigger.name==='trade')a.push(t('trade'));
+ if(!a.length)a.push(d.trigger.name==='level-up'?t('lvlup'):pretty(d.trigger.name));
+ return a.join(' · ');
+}
+function evoNode(n){
+ const id=pid(n.species.url),p=BY[id];
+ const me=`<button class="evo ${id===cur?'me':''}" data-go="${id}"><img loading="lazy" data-id="${id}" src="${art(id)}" data-sh="${+S.shiny}" alt=""><small>#${pad(id)}</small><b>${p?nm(p):pretty(n.species.name)}</b></button>`;
+ if(!n.evolves_to.length)return me;
+ return `<div class="kid">${me}<div class="kids">${n.evolves_to.map(c=>`<div class="kid"><div class="req">→<br>${req(c.evolution_details[0])}</div>${evoNode(c)}</div>`).join('')}</div></div>`;
+}
+const pick=(arr,k)=>{const l=arr.filter(x=>x.language.name===S.lang);return l.length?[l[l.length-1],0]:[[...arr.filter(x=>x.language.name==='en')].pop(),S.lang==='nl']};
+
+/* ---------- battle ---------- */
+const XL={4:'×4',2:'×2',.5:'×½',.25:'×¼',0:'×0'};
+function radar(v){
+ const c=100,R=72,pt=(i,k)=>{const a=-Math.PI/2+i*Math.PI/3;return[(c+R*k*Math.cos(a)).toFixed(1),(c+R*k*Math.sin(a)).toFixed(1)]};
+ const ring=k=>v.map((_,i)=>pt(i,k).join(',')).join(' '),L=['HP','ATK','DEF','SpA','SpD','SPE'];
+ return`<svg viewBox="0 0 200 200" role="img" aria-label="${t('bstat')}">${[.25,.5,.75,1].map(k=>`<polygon points="${ring(k)}" fill="none" stroke="var(--bd)"/>`).join('')}
+ <polygon points="${v.map((x,i)=>pt(i,Math.min(x,200)/200).join(',')).join(' ')}" fill="var(--ac)" fill-opacity=".35" stroke="var(--ac)" stroke-width="2.5"/>
+ ${L.map((l,i)=>{const[x,y]=pt(i,1.2);return`<text x="${x}" y="${y}" font-size="11" fill="var(--mu)" text-anchor="middle" dominant-baseline="middle">${l}</text>`}).join('')}</svg>`;
+}
+function battle(p,pk){
+ const ts=p.t,eff=T.map(a=>[a,ts.reduce((m,d)=>m*(M[a][d]??1),1)]);
+ const grp=m=>eff.filter(e=>e[1]===m).map(e=>`<span class="ty" style="background:${TC[e[0]]}">${tn(e[0])} <b>${XL[m]}</b></span>`).join('');
+ const sec=(k,ms,c)=>{const h=ms.map(grp).join('');return`<div class="eg ${c}"><h5>${t(k)}</h5><div class="tys l">${h||'<span class="none">—</span>'}</div></div>`};
+ const off=[...new Set(ts.flatMap(a=>T.filter(d=>M[a][d]===2)))];
+ const st={};pk.stats.forEach(x=>st[x.stat.name]=x.base_stat);
+ const ks=['hp','attack','defense','special-attack','special-defense','speed'],vs=ks.map(k=>st[k]);
+ const lv=(k,b,mx)=>k==='hp'?(b===1?1:mx?2*b+204:2*b+110):mx?Math.floor((2*b+99)*1.1):Math.floor((2*b+5)*.9);
+ const bst=vs.reduce((a,b)=>a+b,0),atk=st.attack,spa=st['special-attack'],spe=st.speed;
+ const role=atk>=spa+15?'phys':spa>=atk+15?'spec':'mixed',tier=spe>=100?'fast':spe>=60?'avg':'slow';
+ return`<div class="tiles"><div><small>${t('total')}</small><b>${bst}</b></div><div><small>${t('offe')} (Atk+SpA)</small><b>${atk+spa}</b></div><div><small>${t('bulk')} (HP+Def+SpD)</small><b>${st.hp+st.defense+st['special-defense']}</b></div><div><small>${t('speed')}</small><b>${spe} · ${t(tier)}</b></div><div><small>${t('role')}</small><b>${t(role)}</b></div></div>
+ <div><h4>${t('bstat')} — ${t('lv')}</h4><div class="rad">${radar(vs)}<table class="tb"><tr><th></th><th>${t('base')}</th><th>${t('mn')}</th><th>${t('mx')}</th></tr>${ks.map((k,i)=>`<tr><td>${t(k)}</td><td><b>${vs[i]}</b></td><td>${lv(k,vs[i],0)}</td><td>${lv(k,vs[i],1)}</td></tr>`).join('')}</table></div></div>
+ <div class="egs">${sec('weak',[4,2],'w')}${sec('resist',[.5,.25],'r')}${sec('immune',[0],'i')}<div class="eg s"><h5>${t('strong')}</h5><div class="tys l">${off.map(chip).join('')||'<span class="none">—</span>'}</div></div></div>
+ <div><h4>${t('dmg')}</h4><div class="eff">${eff.map(([a,m])=>`<div class="cell m${String(m).replace('.','')}" style="--c:${TC[a]}"><i></i>${tn(a).slice(0,5)}<b>${XL[m]||'×1'}</b></div>`).join('')}</div></div>`;
+}
+
+/* ---------- random generator ---------- */
+let rtok=0,rtm;
+function openRand(){$('#rnd').classList.add('on');document.body.classList.add('lock');roll()}
+function closeRand(){clearInterval(rtm);rtok++;$('#rnd').classList.remove('on');$('#rnd').innerHTML='';if(!cur)document.body.classList.remove('lock')}
+function roll(){
+ const f=S.rf?filtered():[],pool=f.length?f:ALL,my=++rtok;clearInterval(rtm);
+ const id=pool[Math.floor(Math.random()*pool.length)].id;let n=0;
+ rshell(pool[0].id,true);
+ rtm=setInterval(()=>{const q=pool[Math.floor(Math.random()*pool.length)],a=$('#rn'),b=$('#rno');if(a){a.textContent=nm(q);b.textContent='#'+pad(q.id)}
+  if(++n>=9){clearInterval(rtm);if(my===rtok)rshell(id,false)}},70);
+}
+function rshell(id,rolling){
+ const p=BY[id],r=regionOf(id),my=rtok;
+ $('#rnd').innerHTML=`<div class="rcard${rolling?' rolling':''}" style="--c:${TC[p.t[0]]}"><button class="x" data-rclose aria-label="Close">✕</button>
+ <div class="rimg">${rolling?'<div class="ball"></div>':`<img data-id="${id}" data-sh="${+S.shiny}" src="${art(id)}" alt="${nm(p)}">`}</div>
+ <small id="rno">#${pad(id)}</small><h2 id="rn">${rolling?'…':nm(p)}</h2><div class="tys">${rolling?'':p.t.map(chip).join('')}</div>
+ ${rolling?'':`<div class="rf"><div><small>${t('gen')}</small><b>${ROM[p.g-1]}</b></div><div><small>${t('region')}</small><b>${r.n}</b></div><div><small>${t('h')}</small><b id="rh">…</b></div><div><small>${t('w')}</small><b id="rw">…</b></div></div><p class="rdsc" id="rd">${p.l?'★ '+t('leg'):p.m?'✦ '+t('myth'):''}</p>`}
+ <div class="ra">${rolling?'':`<button class="pri" data-ropen="${id}">📖 ${t('open')}</button>`}<button data-reroll>🎲 ${t('again')}</button><button data-shiny></button>
+ <label><input type="checkbox" id="rf" ${S.rf?'checked':''}> ${t('useF')}</label></div></div>`;
+ shLabels();
+ if(!rolling)detail(id).then(d=>{if(my!==rtok||!$('#rh'))return;const fl=pick(d.s.flavor_text_entries),ge=pick(d.s.genera);
+  $('#rh').textContent=(d.p.height/10).toFixed(1)+' m';$('#rw').textContent=(d.p.weight/10).toFixed(1)+' kg';
+  $('#rd').textContent=[ge[0]?ge[0].genus:'',fl[0]?fl[0].flavor_text.replace(/[\f\n\r]+/g,' '):''].filter(Boolean).join(' — ')}).catch(()=>{if($('#rh')){$('#rh').textContent='—';$('#rw').textContent='—'}});
+}
+
+/* ---------- detail modal ---------- */
+async function showModal(id){
+ cur=id;const p=BY[id],m=$('#modal');m.classList.add('on');document.body.classList.add('lock');
+ const col=TC[p.t[0]];
+ m.innerHTML=`<div class="sheet" style="--c:${col}"><div class="sk"><div class="ball"></div></div></div>`;
+ let d;try{d=await detail(id)}catch(e){if(cur===id)m.innerHTML=`<div class="sheet"><div class="empty">${navigator.onLine?t('err'):t('off')}<br><br><button data-nav="back">← ${t('back')}</button></div></div>`;return}
+ if(cur!==id)return;
+ const {p:pk,s}=d,fl=pick(s.flavor_text_entries),ge=pick(s.genera);
+ const txt=fl[0]?fl[0].flavor_text.replace(/[\f\n\r]+/g,' '):'';
+ const stats=pk.stats.map(x=>{const k=x.stat.name;return`<div class="st"><span>${t(k)}</span><b>${x.base_stat}</b><em><i style="width:${Math.min(100,x.base_stat/255*100)}%;background:${x.base_stat>=100?'#22c55e':x.base_stat>=60?'#eab308':'#ef4444'}"></i></em></div>`}).join('');
+ const tot=pk.stats.reduce((a,x)=>a+x.base_stat,0);
+ const fem=p.gr<0?null:p.gr/8*100;
+ const gender=fem===null?t('gl'):`<div class="gbar"><i style="width:${100-fem}%;background:#3b82f6"></i><i style="width:${fem}%;background:#ec4899"></i></div>♂ ${100-fem}% · ♀ ${fem}%`;
+ const single=!d.c.chain.evolves_to.length;
+ const oa=(pk.sprites&&pk.sprites.other&&pk.sprites.other['official-artwork'])||{},hasSh=!!oa.front_shiny;
+ m.innerHTML=`<div class="sheet" style="--c:${col}" data-tab="${S.mtab}">
+ <div class="hero"><div class="bar"><button data-nav="back">← ${t('back')}</button><span><button data-nav="prev" title="${t('prev')}">‹ ${t('prev')}</button> <button data-nav="next" title="${t('next')}">${t('next')} ›</button> <button data-nav="rand">🎲</button></span></div>
+ <small>#${pad(id)} · ${ge[0]?ge[0].genus:''}</small><h2>${nm(p)}</h2><div class="tys">${p.t.map(chip).join('')}</div>
+ <div class="hrow"><button data-shiny ${hasSh?'':`disabled title="${t('shNo')}"`}>${hasSh?'':'✨ '+t('shNo')}</button></div>
+ <img data-id="${id}" data-sh="${+S.shiny}" src="${art(id)}" alt="${nm(p)}"></div>
+ <div class="body"><div class="mtabs"><button data-mtab="info" class="${S.mtab==='info'?'on':''}">ℹ ${t('info')}</button><button data-mtab="battle" class="${S.mtab==='battle'?'on':''}">⚔ ${t('battle')}</button></div>
+ <div class="pi">
+  <div><button class="chip ${FAV.has(id)?'on':''}" data-act="fav" data-id="${id}">${FAV.has(id)?t('fvd'):'♡ '+t('fv')}</button> <button class="chip ${CAU.has(id)?'on':''}" data-act="cau" data-id="${id}">${CAU.has(id)?t('cdone'):'○ '+t('cav')}</button></div>
+  <div><h4>${t('desc')}</h4><p>${txt}</p>${fl[1]?`<small style="color:var(--mu)">${t('fb')}</small>`:''}</div>
+  <div class="facts"><div><small>${t('h')}</small><b>${(pk.height/10).toFixed(1)} m</b></div><div><small>${t('w')}</small><b>${(pk.weight/10).toFixed(1)} kg</b></div><div><small>${t('gen')}</small><b>${ROM[p.g-1]}</b></div><div><small>${t('region')}</small><b>${regionOf(id).n}</b></div>
+   <div><small>✨ ${t('shiny')}</small><b>${hasSh?'✓ '+t('shAv'):'✗ '+t('shNo')}</b></div>
+   <div><small>${t('ab')}</small>${pk.abilities.map(a=>`<b>${pretty(a.ability.name)}</b>${a.is_hidden?` <small>(${t('hid')})</small>`:''}`).join('<br>')}</div>
+   <div><small>${t('gender')}</small>${gender}</div>${p.l?`<div><b>★ ${t('leg')}</b></div>`:''}${p.m?`<div><b>✦ ${t('myth')}</b></div>`:''}</div>
+  <div><h4>${t('bs')} — ${t('total')} ${tot}</h4>${stats}</div>
+  <div><h4>${t('evo')}</h4>${single?`<p style="color:var(--mu)">${t('noevo')}</p>`:''}<div class="tree">${evoNode(d.c.chain)}</div></div>
+ </div>
+ <div class="pb">${battle(p,pk)}</div>
+ </div></div>`;
+ shLabels();m.scrollTop=0;
+}
+function hideModal(){cur=0;$('#modal').classList.remove('on');if(!$('#rnd').classList.contains('on'))document.body.classList.remove('lock');$('#modal').innerHTML=''}
+function route(){const m=location.hash.match(/^#\/(\d+)$/);if(m&&+m[1]>=1&&+m[1]<=1025)showModal(+m[1]);else hideModal()}
+const go=id=>{navN++;location.hash='#/'+id};
+window.addEventListener('hashchange',route);
+
+/* ---------- events ---------- */
+function toggle(set,key,id){set.has(id)?set.delete(id):set.add(id);store.set(key,[...set]);progress();
+ document.querySelectorAll(`.card[data-go="${id}"] .${key==='pdx_fav'?'f':'c'}`).forEach(b=>b.classList.toggle('on',set.has(id)));
+ if(cur===id)showModal(id);if(S.view==='stats')renderStats();if(S.view==='regions')renderRegions();banner();if((S.fav&&key==='pdx_fav')||(S.cau&&key==='pdx_caught'))renderList()}
+const rnd1=()=>1+Math.floor(Math.random()*1025);
+document.addEventListener('click',e=>{
+ const a=e.target.closest('[data-act]');
+ if(a){e.stopPropagation();const id=+a.dataset.id;a.dataset.act==='fav'?toggle(FAV,'pdx_fav',id):toggle(CAU,'pdx_caught',id);return}
+ if(e.target.closest('[data-rclose]')||e.target.id==='rnd'){closeRand();return}
+ if(e.target.closest('[data-reroll]')){roll();return}
+ const ro=e.target.closest('[data-ropen]');if(ro){const id=+ro.dataset.ropen;closeRand();go(id);return}
+ const sh=e.target.closest('[data-shiny]');if(sh){if(!sh.disabled){S.shiny=!S.shiny;applyShiny()}return}
+ const mt=e.target.closest('[data-mtab]');if(mt){S.mtab=mt.dataset.mtab;const sc=mt.closest('.sheet');sc.dataset.tab=S.mtab;sc.querySelectorAll('[data-mtab]').forEach(b=>b.classList.toggle('on',b===mt));return}
+ const v=e.target.closest('[data-view]');if(v){setView(v.dataset.view);return}
+ if(e.target.closest('[data-clr]')){S.region='';applyLang();renderList();return}
+ const rg=e.target.closest('[data-region]');if(rg){S.region=rg.dataset.region;S.gen=0;setView('list');renderList();return}
+ const n=e.target.closest('[data-nav]');
+ if(n){const k=n.dataset.nav;if(k==='back'){if(navN>0){navN--;history.back()}else location.hash=''}
+  else if(k==='prev')go(cur===1?1025:cur-1);else if(k==='next')go(cur===1025?1:cur+1);else go(rnd1());return}
+ const g=e.target.closest('[data-go]');if(g){go(+g.dataset.go);return}
+ const r=e.target.closest('.row');
+ if(r){if(r.dataset.type){S.type=r.dataset.type}else{S.gen=+r.dataset.gen}setView('list');renderList();return}
+ const c=e.target.closest('[data-gen]');if(c){S.gen=+c.dataset.gen;applyLang();renderList();return}
+ if(e.target.id==='modal'){if(navN>0){navN--;history.back()}else location.hash=''}
+});
+document.addEventListener('change',e=>{if(e.target.id==='rf')S.rf=e.target.checked});
+document.addEventListener('keydown',e=>{const tg=e.target.tagName;if(tg==='INPUT'||tg==='SELECT')return;
+ if($('#rnd').classList.contains('on')){if(e.key==='Escape')closeRand();return}
+ if(!cur)return;if(e.key==='Escape')location.hash='';if(e.key==='ArrowRight')go(cur===1025?1:cur+1);if(e.key==='ArrowLeft')go(cur===1?1025:cur-1)});
+let tm;$('#q').oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>{S.q=e.target.value;renderList()},150)};
+$('#type').onchange=e=>{S.type=e.target.value;applyLang();renderList()};
+$('#region').onchange=e=>{S.region=e.target.value;applyLang();renderList()};
+$('#sort').onchange=e=>{S.sort=e.target.value;renderList()};
+$('#fToggle').onclick=()=>$('#fx').classList.toggle('open');
+[['fLeg','leg'],['fMyth','myth'],['fFav','fav'],['fCau','cau']].forEach(([id,k])=>$('#'+id).onclick=()=>{S[k]=!S[k];applyLang();renderList()});
+$('#fReset').onclick=()=>{Object.assign(S,{q:'',type:'',gen:0,region:'',leg:false,myth:false,fav:false,cau:false,sort:'num'});$('#q').value='';applyLang();renderList()};
+$('#bRand').onclick=openRand;
+$('#bTheme').onclick=()=>{S.theme=S.theme==='dark'?'light':'dark';store.set('pdx_theme',S.theme);applyLang()};
+$('#lang').onchange=e=>{S.lang=e.target.value;store.set('pdx_lang',S.lang);applyLang();renderList();if(S.view==='stats')renderStats();if(S.view==='regions')renderRegions();if(cur)showModal(cur);if($('#rnd').classList.contains('on'))rshell(+($('#rnd img')?$('#rnd img').dataset.id:0)||rnd1(),false)};
+window.addEventListener('offline',()=>{});
+document.body.classList.toggle('shiny',S.shiny);
+applyLang();boot();
+</script>
+</body>
+</html>
